@@ -88,12 +88,50 @@ def process(sources, preserve_paths=True, outdir=None, language=None,
   """
   """
   if not outdir:
+    raise TypeError("Missing the required 'directory' keyword argument.")
+    
+  sources = sorted(_flatten_sources(sources))
   
-  
-  
-  
-  
-
+  if sources:
+    outdir = ensure_directory(outdir)
+    css = open(path.join(outdir, "pycco.css"), "wb")
+    css.write(pycco_css.encode(encoding))
+    css.close()
+    
+    generated_files = []
+    
+    def next_file():
+      s = sources.pop(0)
+      dest = destinations(s, preserve_paths=preserve_paths, outdir=outdir)
+      
+      try:
+        os.makedirs(path.split(dest)[0])
+      except OSError:
+        pass
+      
+      try:
+        with open(dest, "wb") as f:
+          f.write(generate_documentation(s, preserve_paths=preserve_paths,
+            outdir=outdir,
+            language=language,
+            encoding=encoding))
+        
+        print("pycco: {} -> {}".format(s, dest))
+        generated_files.append(dest)
+      except (ValueError, UnicodeDecodeError) as e:
+        if skip:
+          print("pycco [FAILURE]: {}, {}".format(s, e))
+        else:
+          raise
+          
+      if sources:
+        next_file()
+    next_file()
+    
+    if index:
+      with open(path.join(outdir, "index.html"), "wb") as f:
+        f.write(generate_index(generated_files, outdir))
+        
 __all__ = ("process", "generate_documentation")
 
 def monitor(sources, opts):
