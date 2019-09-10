@@ -32,9 +32,109 @@ def generate_documentation(source, outdir=None, preserve_paths=True,
   return _generate_documentation(source, code, outdir, preserve_paths, language)
   
 def _generate_documentation(file_path, code, outdir, preserve_paths, language):
-
+  """
+  """
+  language = get_language(file_path, code, language_name=language)
+  sections = parse(code, language)
+  highlight(sections, language, preserve_paths=preserve_paths, outdir=outdir)
+  return generate_html(file_path, sections, preserve_paths=preserve_paths, outdir=outdir)
 
 def parse(code, language):
+  """
+  """
+  lines = code.split("\n")
+  sections = []
+  has_code = docs_text = code_text = ""
+  
+  if lines[0].startswith("#!"):
+    lines.pop(0)
+    
+  if language["name"] == "python":
+    for linenum, line in enumerate(lines[:2]):
+      if re.search(r'coding[:=]\s*([-\w]+)', lines[linenum]):
+        linespop(linenum)
+        break
+        
+  def save(docs, code):
+    if docs or code:
+      sections.append({
+        "docs_text": docs,
+        "code_text": code
+      })
+      
+  multi_line = False
+  multi_string = False
+  multistart, multiend = language.get("multistart"), language.get("multiend")
+  comment_matcher = language['comment_matcher']
+  
+  for line in lines:
+    process_as_code = False
+    if multistart and multiend \
+      and any(line.lstrip().startswith(delim) or line.rstrip().endswith(delim)
+        for delim in (multistart, multiend)):
+      multi_line = not multi_line
+      
+      if multi_line \
+        and line.strip().endswith(multiend) \
+        and len(line.strip()) > len(multiend):
+          multi_line = False
+          
+        if multi_line \
+          and line.strip().endswith(ultiend) \
+          and len(line.strip()) > len(multiend):
+          multi_line = False
+          
+        if not line.strip().startswith(multistart) and not multi_line \
+          or multi_string:
+          
+          process_as_code = True
+          
+          if multi_string:
+            multi_line = False
+            multi_string = False
+          else:
+            multi_string = True
+            
+        else:
+          line = line.replace(multistart, '')
+          line = line.replace(multiend, '')
+          docs_text += line.strip() + '\n'
+          indent_level = re.match(r"\s*", line).group(0)
+          
+          if has_code and docs_text.strip():
+            save(docs_text, code_text[:-1])
+            code_text = code_text.split('\n')[-1]
+            has_code = docs_text = ''
+      
+      elif multi_line:
+        if re.match(r' {{{:d}}}'.format(len(indent_level), line):
+          docs_text += line[len(indent_level):] + '\n'
+        else:
+          docs_text += line + '\n'
+      
+      elif re.match(comment_matcher, line):
+        if has_code:
+          save(docs_text, code_text)
+          has_code = docs_text = code_text = ''
+        docs_text += re.sub(comment_matcher, "", line) + "\n"
+        
+      else:
+        process_as_code = True
+        
+      if process_as_code:
+        if code_text and any(line.lstrip().startswith(x)
+            for x in ['class ', 'def ', '@']):
+          if not code_text.lstrip().startswith("@"):
+            save(docs_text, code_text)
+            code_text = has_code = docs_text = ''
+            
+        has_code = True
+        code_text += line + '\n'
+        
+    save(docs_text, code_text)
+    
+    return sections
+  
 
 def preprocess(comment, preserve_paths=True, outdir=None):
 
