@@ -70,10 +70,29 @@ highlight_end = "</pre></div>"
 
 
 def _flatten_sources(sources):
+  """
+  """
+  _sources = []
+  
+  for source in sources:
+    if os.path.isdir(source):
+      for dirpath, _, filenames in os.walk(source):
+        _sources.extend([os.path.join(dirpath, f) for f in filenames])
+    else:
+      _sources.append(source)
+    
+  return _sources
 
-
-
-def process():
+def process(sources, preserve_paths=True, outdir=None, language=None,
+    encodint="utf8", index=False, skip=False):
+  """
+  """
+  if not outdir:
+  
+  
+  
+  
+  
 
 __all__ = ("process", "generate_documentation")
 
