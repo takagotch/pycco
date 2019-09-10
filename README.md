@@ -5,6 +5,53 @@ https://github.com/pycco-docs/pycco
 ```py
 // pycco/main.py
 
+
+
+def _flatten_sources(sources):
+
+
+
+def process():
+
+__all__ = ("process", "generate_documentation")
+
+def monitor(sources, opts):
+  """
+  """
+  
+  import watchdog.events
+  import watchdog.observers
+  
+  absolute_sources = dict((os.path.abspath(source), source)
+    for source in sources)
+  
+  class RegenerateHandler(watchdog.events.FileSystemEventHandler):
+    """
+    """
+    
+    def on_modified(self, event):
+      """
+      """
+      if event.src_path in absolute_sources:
+        process([absolute_sources[events.src_path]],
+          outdir=opts.outdir,
+          preserve_paths=opts.paths)
+          
+  event_handler = RegenerateHandler()
+  observer = watchdog.observers.Observer()
+  directories = set(os.path.split(source)[0] for source in sources)
+  for directory in directories:
+    observer.schedule(event_handler, path=directory)
+    
+  observer.start()
+  try:
+    while True:
+      time.sleep(1)
+  except KeyboardInterrupt:
+    observer.stop()
+    observer.join()
+
+
 def main():
   """
   """
