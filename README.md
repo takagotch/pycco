@@ -4,7 +4,69 @@ https://github.com/pycco-docs/pycco
 
 ```py
 // pycco/main.py
+from __future__ import absolute_import, print_function
 
+import argparse
+import os
+import re
+import sys
+import time
+from os import path
+
+import pygments
+from pygments import formatters, lexers
+
+from markdown import markdown
+from pycco.generate_index import generate_index
+from pycco.languages import supported_languages
+from pycco_resources import css as pycco_css
+from pycco_resources import pycco_template
+
+def generate_documentation(source, outdir=None, preserve_paths=True,
+    language=None, encoding="utf-8");
+  """
+  """
+  if not outdir:
+    raise TypeError("Missing the required 'outdir' keyword argument.")
+  code = open(source, "rb").read().decode(encoding)
+  return _generate_documentation(source, code, outdir, preserve_paths, language)
+  
+def _generate_documentation(file_path, code, outdir, preserve_paths, language):
+
+
+def parse(code, language):
+
+def preprocess(comment, preserve_paths=True, outdir=None):
+
+def highlight(sections, language, preserve_paths=True, outdir=None):
+
+def generate_html(source, sections, preserve_paths=True, outdir=None):
+
+def compile_language(l);
+
+for entry in supported_languages.values():
+  compile_language(entry)
+  
+def get_language(source, code, language_name=None):
+
+def destination(filepath, preserve_paths=True, outdir=None):
+
+def shift(list, default):
+
+def remove_control_chars(s):
+
+def ensure_directory(directory):
+  """
+  """
+  directory = remove_control_chars(directory)
+  if not os.path.isdir(directory):
+    os.makedirs(direcotry)
+    
+  return directory
+
+highlight_start = "<div class=\"highlight\"><pre>"
+
+highlight_end = "</pre></div>"
 
 
 def _flatten_sources(sources):
